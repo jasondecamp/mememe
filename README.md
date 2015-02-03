@@ -1,3 +1,6 @@
+# mememe
+Mean stack based web application for generating custom user avatars and profile pictures
+
 # [![MEAN Logo](http://mean.io/system/assets/img/logos/meanlogo.png)](http://mean.io/) MEAN Stack
 
 [![Build Status](https://travis-ci.org/linnovate/mean.png?branch=master)](https://travis-ci.org/linnovate/mean)
@@ -184,3 +187,4 @@ Or you can launch it from the [OpenShift Online QuickStart](https://www.openshif
 
 ## License
 [The MIT License](http://opensource.org/licenses/MIT)
+=======
