@@ -34,7 +34,7 @@ function packagePulse(name, version, event) {
 			if (json) {
 				if (!json.pulse) return console.log(name + ' does not have a pulse');
 				if (json.message) console.log(json.message);
-
+				if (json.severity === 'critical') process.exit();
 			}
 		});
 	});
@@ -67,7 +67,7 @@ function loadPackage(paths, index, callback) {
 		var json = parseJson(data);
 
 		if (json.name === 'mean-health' && paths[index + 1]) return loadPackage(paths, index + 1, callback);
-		
+
 		if (json) return callback(null, json);
 
 		return callback(true, e.message);

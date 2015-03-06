@@ -3,9 +3,10 @@
 /**
  * Module dependencies.
  */
-var mongoose = require('mongoose'),
-  Schema = mongoose.Schema,
-  crypto = require('crypto');
+var mongoose  = require('mongoose'),
+    Schema    = mongoose.Schema,
+    crypto    = require('crypto'),
+          _   = require('lodash');
 
 /**
  * Validations
@@ -31,25 +32,35 @@ var validateUniqueEmail = function(value, callback) {
 };
 
 /**
+ * Getter
+ */
+var escapeProperty = function(value) {
+  return _.escape(value);
+};
+
+/**
  * User Schema
  */
 
 var UserSchema = new Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    get: escapeProperty
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    match: [/\S+@\S+\.\S+/, 'Please enter a valid email'],
+    // Regexp to validate emails with more strict rules as added in tests/users.js which also conforms mostly with RFC2822 guide lines
+    match: [/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 'Please enter a valid email'],
     validate: [validateUniqueEmail, 'E-mail address is already in-use']
   },
   username: {
     type: String,
     unique: true,
-    required: true
+    required: true,
+    get: escapeProperty
   },
   roles: {
     type: Array,
@@ -152,6 +163,18 @@ UserSchema.methods = {
     if (!password || !this.salt) return '';
     var salt = new Buffer(this.salt, 'base64');
     return crypto.pbkdf2Sync(password, salt, 10000, 64).toString('base64');
+  },
+
+  /**
+   * Hide security sensitive fields
+   * 
+   * @returns {*|Array|Binary|Object}
+   */
+  toJSON: function() {
+    var obj = this.toObject();
+    delete obj.hashed_password;
+    delete obj.salt;
+    return obj;
   }
 };
 

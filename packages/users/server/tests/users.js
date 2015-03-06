@@ -1,3 +1,5 @@
+/* jshint -W079 */ 
+/* Related to https://github.com/linnovate/mean/issues/898 */
 'use strict';
 
 var crypto = require('crypto');
@@ -17,8 +19,9 @@ function getRandomString(len) {
 /**
  * Module dependencies.
  */
-var should = require('should'),
-  mongoose = require('mongoose'),
+
+var expect = require('expect.js'),
+  	mongoose = require('mongoose'),
   User = mongoose.model('User');
 
 /**
@@ -57,12 +60,12 @@ describe('<Unit Test>', function() {
         User.find({
           email: user1.email
         }, function(err, users) {
-          users.should.have.length(0);
+          expect(users.length).to.equal(0);
 
           User.find({
             email: user2.email
           }, function(err, users) {
-            users.should.have.length(0);
+            expect(users.length).to.equal(0);
             done();
           });
 
@@ -73,7 +76,7 @@ describe('<Unit Test>', function() {
 
         var _user = new User(user1);
         _user.save(function(err) {
-          should.not.exist(err);
+          expect(err).to.be(null);
           _user.remove();
           done();
         });
@@ -84,13 +87,13 @@ describe('<Unit Test>', function() {
 
         var _user = new User(user1);
         _user.save(function(err) {
-          should.not.exist(err);
+          expect(err).to.be(null);
 
           // the user1 object and users in general are created with only the 'authenticated' role
-          _user.hasRole('authenticated').should.equal(true);
-          _user.hasRole('admin').should.equal(false);
-          _user.isAdmin().should.equal(false);
-          _user.roles.should.have.length(1);
+          expect(_user.hasRole('authenticated')).to.equal(true);
+          expect(_user.hasRole('admin')).to.equal(false);
+          expect(_user.isAdmin()).to.equal(false);
+          expect(_user.roles.length).to.equal(1);
           _user.remove(function(err) {
             done();
           });
@@ -103,10 +106,11 @@ describe('<Unit Test>', function() {
         var _user = new User(user1);
 
         _user.save(function(err) {
-          should.not.exist(err);
-          _user.hashed_password.should.not.have.length(0);
-          _user.salt.should.not.have.length(0);
-          _user.authenticate(user1.password).should.equal(true);
+          expect(err).to.be(null);
+
+          expect(_user.hashed_password.length).to.not.equal(0);
+          expect(_user.salt.length).to.not.equal(0);
+          expect(_user.authenticate(user1.password)).to.equal(true);
           _user.remove(function(err) {
             done();
           });
@@ -118,12 +122,12 @@ describe('<Unit Test>', function() {
 
         var _user = new User(user1);
         _user.save(function(err) {
-          should.not.exist(err);
+          expect(err).to.be(null);
 
           _user.name = 'Full name2';
           _user.save(function(err) {
-            should.not.exist(err);
-            _user.name.should.equal('Full name2');
+            expect(err).to.be(null);
+            expect(_user.name).to.equal('Full name2');
             _user.remove(function() {
               done();
             });
@@ -141,7 +145,7 @@ describe('<Unit Test>', function() {
         var _user2 = new User(user1);
 
         return _user2.save(function(err) {
-          should.exist(err);
+          expect(err).to.not.be(null);
           _user1.remove(function() {
 
             if (!err) {
@@ -163,7 +167,7 @@ describe('<Unit Test>', function() {
         _user.name = '';
 
         return _user.save(function(err) {
-          should.exist(err);
+          expect(err).to.not.be(null);
           done();
         });
       });
@@ -174,7 +178,7 @@ describe('<Unit Test>', function() {
         _user.username = '';
 
         return _user.save(function(err) {
-          should.exist(err);
+          expect(err).to.not.be(null);
           done();
         });
       });
@@ -186,7 +190,7 @@ describe('<Unit Test>', function() {
         _user.provider = 'local';
 
         return _user.save(function(err) {
-          should.exist(err);
+          expect(err).to.not.be(null);
           done();
         });
       });
@@ -200,11 +204,213 @@ describe('<Unit Test>', function() {
 
         return _user.save(function(err) {
           _user.remove(function() {
-            should.not.exist(err);
-            _user.provider.should.equal('twitter');
-            _user.hashed_password.should.have.length(0);
+            expect(err).to.be(null);
+            expect(_user.provider).to.equal('twitter');
+            expect(_user.hashed_password.length).to.equal(0);
             done();
           });
+        });
+      });
+
+    });
+
+    // source: http://en.wikipedia.org/wiki/Email_address
+    describe('Test Email Validations', function() {
+      it('Shouldnt allow invalid emails #1', function(done) {
+        var _user = new User(user1);
+        _user.email = 'Abc.example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.not.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.not.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Shouldnt allow invalid emails #2', function(done) {
+        var _user = new User(user1);
+        _user.email = 'A@b@c@example.com';
+        _user.save(function(err) {
+          if (err) {
+            expect(err).to.not.be(null);
+            done();
+          } else {
+            _user.remove(function(err2) {
+              expect(err).to.not.be(null);
+              done();
+            });
+          }
+        });
+      });
+
+      it('Shouldnt allow invalid emails #3', function(done) {
+        var _user = new User(user1);
+        _user.email = 'a"b(c)d,e:f;g<h>i[j\\k]l@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.not.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.not.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Shouldnt allow invalid emails #4', function(done) {
+        var _user = new User(user1);
+        _user.email = 'just"not"right@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.not.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.not.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Shouldnt allow invalid emails #5', function(done) {
+        var _user = new User(user1);
+        _user.email = 'this is"not\\allowed@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.not.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.not.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Shouldnt allow invalid emails #6', function(done) {
+        var _user = new User(user1);
+        _user.email = 'this\\ still\\"not\\allowed@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.not.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.not.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Shouldnt allow invalid emails #7', function(done) {
+        var _user = new User(user1);
+        _user.email = 'john..doe@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.not.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.not.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Shouldnt allow invalid emails #8', function(done) {
+        var _user = new User(user1);
+        _user.email = 'john.doe@example..com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.not.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.not.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Should save with valid email #1', function(done) {
+        var _user = new User(user1);
+        _user.email = 'john.doe@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Should save with valid email #2', function(done) {
+        var _user = new User(user1);
+        _user.email = 'disposable.style.email.with+symbol@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.be(null);
+            done();
+          }
+        });
+      });
+
+      it('Should save with valid email #3', function(done) {
+        var _user = new User(user1);
+        _user.email = 'other.email-with-dash@example.com';
+        _user.save(function(err) {
+          if (!err) {
+            _user.remove(function() {
+              expect(err).to.be(null);
+              done();
+            });
+          } else {
+            expect(err).to.be(null);
+            done();
+          }
+        });
+      });
+
+      it('name should be escaped from xss', function(done) {
+
+        var _user = new User(user1);
+        _user.name = '</script><script>alert(1)</script>';
+
+        return _user.save(function(err) {
+          expect(_user.name).to.be('&lt;/script&gt;&lt;script&gt;alert(1)&lt;/script&gt;');
+          done();
+        });
+      });
+
+      it('username should be escaped from xss', function(done) {
+
+        var _user = new User(user1);
+        _user.name = '<b>xss</b>';
+
+        return _user.save(function(err) {
+          expect(_user.name).to.be('&lt;b&gt;xss&lt;/b&gt;');
+          done();
         });
       });
 

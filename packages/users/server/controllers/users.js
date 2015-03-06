@@ -69,13 +69,8 @@ exports.create = function(req, res, next) {
     if (err) {
       switch (err.code) {
         case 11000:
-          res.status(400).send([{
-            msg: 'Email already taken',
-            param: 'email'
-          }]);
-          break;
         case 11001:
-          res.status(400).send([{
+          res.status(400).json([{
             msg: 'Username already taken',
             param: 'username'
           }]);
@@ -93,7 +88,7 @@ exports.create = function(req, res, next) {
               });
             }
 
-            res.status(400).send(modelErrors);
+            res.status(400).json(modelErrors);
           }
       }
 
@@ -163,7 +158,7 @@ exports.resetpassword = function(req, res, next) {
       req.logIn(user, function(err) {
         if (err) return next(err);
         return res.send({
-          user: user,
+          user: user
         });
       });
     });
@@ -174,7 +169,7 @@ exports.resetpassword = function(req, res, next) {
  * Send reset password email
  */
 function sendMail(mailOptions) {
-  var transport = nodemailer.createTransport('SMTP', config.mailer);
+  var transport = nodemailer.createTransport(config.mailer);
   transport.sendMail(mailOptions, function(err, response) {
     if (err) return err;
     return response;

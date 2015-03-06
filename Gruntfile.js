@@ -1,9 +1,9 @@
 'use strict';
 
 var paths = {
-  js: ['*.js', 'test/**/*.js', '!test/coverage/**', '!bower_components/**', 'packages/**/*.js', '!packages/**/node_modules/**'],
+  js: ['*.js', 'test/**/*.js', '!test/coverage/**', '!bower_components/**', 'packages/**/*.js', '!packages/**/node_modules/**', '!packages/contrib/**/*.js', '!packages/contrib/**/node_modules/**'],
   html: ['packages/**/public/**/views/**', 'packages/**/server/views/**'],
-  css: ['!bower_components/**', 'packages/**/public/**/css/*.css']
+  css: ['!bower_components/**', 'packages/**/public/**/css/*.css', '!packages/contrib/**/public/**/css/*.css']
 };
 
 module.exports = function(grunt) {
@@ -113,12 +113,21 @@ module.exports = function(grunt) {
   //Load NPM tasks
   require('load-grunt-tasks')(grunt);
 
-  //Default task(s).
+  /**
+   * Default Task
+   */
+  grunt.hook.push('clean', -9999);
+  grunt.hook.push('concurrent', 9999);
   if (process.env.NODE_ENV === 'production') {
-    grunt.registerTask('default', ['clean', 'cssmin', 'uglify', 'concurrent']);
+    grunt.hook.push('cssmin', 100);
+    grunt.hook.push('uglify', 200);
   } else {
-    grunt.registerTask('default', ['clean', 'jshint', 'csslint', 'concurrent']);
+    grunt.hook.push('jshint', -200);
+    grunt.hook.push('csslint', 100);
   }
+
+  //Default task.
+  grunt.registerTask('default', ['hook']);
 
   //Test task.
   grunt.registerTask('test', ['env:test', 'mochaTest', 'karma:unit']);
