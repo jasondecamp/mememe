@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="https://www.facebook.com/2008/fbml" itemscope="itemscope" itemtype="http://schema.org/Product">
+{% include 'includes/head.html' %}
+
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top" data-ng-include="'/mememe/views/header.html'" data-role="navigation"></div>
+    {% if adminEnabled %}
+    <section class="admin-menu">
+        <div data-ng-include="'/mean-admin/views/index.html'"></div>
+    </section>
+    {% endif %}
+    <section class="content">
+		<section data-ui-view></section>
+		<script type="text/javascript">
+		    window.user = {{user|json|safe}};
+		    window.modules = {{modules|json|safe}};
+		</script>
+    </section>
+    <script type="text/javascript" src="/modules/aggregated.js"></script>
+</body>
+
+</html>

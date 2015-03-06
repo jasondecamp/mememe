@@ -1,0 +1,11 @@
+.content {
+	margin-top: 50px;
+}
+
+.intro {
+  background-image: url('/mememe/assets/img/mememe-intro.jpg');
+  background-position: center center;
+  background-size: cover;
+  height: 400px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.4);
+}
